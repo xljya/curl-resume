@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "tail": "wrangler tail"
+    "tail": "wrangler tail",
+    "preprocess": "FORCE_COLOR=1 npx tsx scripts/preprocess.ts",
+    "build": "npm run preprocess && wrangler deploy --dry-run"
   },
   "keywords": [
     "resume",
@@ -19,10 +21,19 @@
   "author": "TokenRoll",
   "license": "MIT",
   "devDependencies": {
-    "wrangler": "^3.91.0"
+    "@cloudflare/workers-types": "^4.20251128.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.51.0"
   },
   "dependencies": {
+    "decode-gif": "^1.0.1",
+    "jimp": "^1.6.0",
+    "jpeg-js": "^0.4.4",
     "marked": "^15.0.4",
-    "marked-terminal": "^7.2.1"
+    "marked-terminal": "^7.2.1",
+    "omggif": "^1.0.10",
+    "pngjs": "^7.0.0",
+    "upng-js": "^2.1.0"
   }
 }

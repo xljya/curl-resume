@@ -1,13 +1,21 @@
-// src/index.js
+// src/index.ts
 // Cloudflare Worker 入口文件 - 支持流式动画
 
-import { config } from "./config.js";
-import { streamResume } from "./streamHandler.js";
+import { config } from "./config";
+import { streamResume } from "./streamHandler";
+import type { LogoContent } from "./types";
+
+export interface Env {
+  ENVIRONMENT?: string;
+}
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     const url = new URL(request.url);
-    const params = url.searchParams;
 
     // 获取 User-Agent 检测是否为 curl
     const userAgent = request.headers.get("User-Agent") || "";
@@ -15,12 +23,19 @@ export default {
 
     // 非 curl 访问 - 显示 HTML 页面
     if (!isCurl) {
+      // 从第一个 logo 页面获取信息
+      const logoPage = config.pages.find((p) => p.type === "logo");
+      const logoContent = logoPage?.content as LogoContent | undefined;
+      const title = logoContent?.text || "Terminal Resume";
+      const subtitle = logoContent?.subtitle || "";
+      const tagline = logoContent?.tagline || "";
+
       const htmlResponse = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>${config.name} - ${config.title}</title>
+  <title>${title} - ${subtitle}</title>
   <style>
     body {
       background: #0d1117;
@@ -42,16 +57,18 @@ export default {
       display: inline-block;
       margin: 0.5rem;
     }
-    .slogan { color: #f85149; font-style: italic; margin-top: 1rem; }
+    .subtitle { color: #8b949e; margin-bottom: 0.5rem; }
+    .tagline { color: #f85149; font-style: italic; margin-top: 1rem; }
     .hint { color: #8b949e; font-size: 0.9rem; margin-top: 1rem; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>${config.name} - ${config.title}</h1>
-    <p class="slogan">${config.pages[2]?.content?.slogan || ""}</p>
+    <h1>${title}</h1>
+    <p class="subtitle">${subtitle}</p>
+    <p class="tagline">${tagline}</p>
     <p>请使用 curl 访问:</p>
-    <code>curl -N me.pdjjq.org</code>
+    <code>curl -N ${url.host}</code>
     <p class="hint">-N 参数开启流式动画效果</p>
   </div>
 </body>

@@ -1,8 +1,8 @@
-// src/asciiGenerator.js
+// src/asciiGenerator.ts
 // ASCII 艺术字生成器 - 将文本转换为大字符
 
 // 简单的 3x5 字体映射 (每个字符 3 宽 5 高)
-const FONT_3x5 = {
+const FONT_3x5: Record<string, string[]> = {
   A: ["███", "█ █", "███", "█ █", "█ █"],
   B: ["██ ", "█ █", "██ ", "█ █", "██ "],
   C: ["███", "█  ", "█  ", "█  ", "███"],
@@ -30,20 +30,20 @@ const FONT_3x5 = {
   Y: ["█ █", "█ █", " █ ", " █ ", " █ "],
   Z: ["███", "  █", " █ ", "█  ", "███"],
   " ": ["   ", "   ", "   ", "   ", "   "],
-  0: ["███", "█ █", "█ █", "█ █", "███"],
-  1: [" █ ", "██ ", " █ ", " █ ", "███"],
-  2: ["███", "  █", "███", "█  ", "███"],
-  3: ["███", "  █", "███", "  █", "███"],
-  4: ["█ █", "█ █", "███", "  █", "  █"],
-  5: ["███", "█  ", "███", "  █", "███"],
-  6: ["███", "█  ", "███", "█ █", "███"],
-  7: ["███", "  █", "  █", "  █", "  █"],
-  8: ["███", "█ █", "███", "█ █", "███"],
-  9: ["███", "█ █", "███", "  █", "███"],
+  "0": ["███", "█ █", "█ █", "█ █", "███"],
+  "1": [" █ ", "██ ", " █ ", " █ ", "███"],
+  "2": ["███", "  █", "███", "█  ", "███"],
+  "3": ["███", "  █", "███", "  █", "███"],
+  "4": ["█ █", "█ █", "███", "  █", "  █"],
+  "5": ["███", "█  ", "███", "  █", "███"],
+  "6": ["███", "█  ", "███", "█ █", "███"],
+  "7": ["███", "  █", "  █", "  █", "  █"],
+  "8": ["███", "█ █", "███", "█ █", "███"],
+  "9": ["███", "█ █", "███", "  █", "███"],
 };
 
 // 大型 Block 字体 (6x6)
-const FONT_BLOCK = {
+const FONT_BLOCK: Record<string, string[]> = {
   A: [
     " ████ ",
     "██  ██",
@@ -264,16 +264,13 @@ const FONT_BLOCK = {
 
 /**
  * 生成 ASCII 艺术字
- * @param {string} text - 要转换的文本
- * @param {string} style - 字体样式: 'simple' | 'block'
- * @returns {string} ASCII 艺术字
  */
-export function generateAscii(text, style = "block") {
+export function generateAscii(text: string, style: "simple" | "block" = "block"): string {
   const font = style === "simple" ? FONT_3x5 : FONT_BLOCK;
   const height = style === "simple" ? 5 : 6;
   const upperText = text.toUpperCase();
 
-  const lines = [];
+  const lines: string[] = [];
   for (let row = 0; row < height; row++) {
     let line = "";
     for (const char of upperText) {
@@ -288,12 +285,12 @@ export function generateAscii(text, style = "block") {
 
 /**
  * 将普通字符替换为 Unicode 方块字符
- * @param {string} ascii - ASCII 艺术字
- * @param {string} style - 方块样式: 'full' | 'light' | 'double'
- * @returns {string} 替换后的艺术字
  */
-export function stylizeAscii(ascii, style = "full") {
-  const styles = {
+export function stylizeAscii(
+  ascii: string,
+  style: "full" | "light" | "double" = "full"
+): string {
+  const styles: Record<string, { block: string; half: string }> = {
     full: { block: "█", half: "▓" },
     light: { block: "░", half: "▒" },
     double: { block: "╔", half: "═" },
@@ -305,10 +302,8 @@ export function stylizeAscii(ascii, style = "full") {
 
 /**
  * 添加边框
- * @param {string} ascii - ASCII 艺术字
- * @returns {string} 带边框的艺术字
  */
-export function addBorder(ascii) {
+export function addBorder(ascii: string): string {
   const lines = ascii.split("\n");
   const maxWidth = Math.max(...lines.map((l) => l.length));
 

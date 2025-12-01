@@ -1,10 +1,10 @@
 name = "terminal-resume"
-main = "src/index.js"
+main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 # 开发环境配置
 [dev]
-port = 8787
+port = 8789
 local_protocol = "http"
 
 # 生产环境变量 (可选)

@@ -12,10 +12,12 @@ curl -N me.pdjjq.org
 
 ## 特性
 
-- 流式动画效果（打字机、光波、故障切换等）
-- 多页面系统（启动页、Logo 页、内容页）
-- 高度可配置（只需修改 `config.js`）
-- 支持自定义 ASCII Logo
+- 流式动画效果（打字机、解密、故障、Matrix 等）
+- 多页面系统（Logo、Markdown、图片、原始文本）
+- 图片/GIF 转 ASCII 艺术（支持彩色）
+- Markdown 终端渲染（带 ANSI 颜色）
+- 高度可配置（只需修改 `src/config.ts`）
+- TypeScript 编写，类型安全
 - 基于 Cloudflare Workers，全球边缘部署
 
 ## 快速开始
@@ -26,7 +28,15 @@ curl -N me.pdjjq.org
 npm install
 ```
 
-### 2. 本地开发
+### 2. 预处理资源
+
+```bash
+npm run preprocess
+```
+
+这会处理配置中的图片和 Markdown，生成预处理数据。
+
+### 3. 本地开发
 
 ```bash
 npm run dev
@@ -35,12 +45,12 @@ npm run dev
 然后在另一个终端测试：
 
 ```bash
-curl -N http://localhost:8787
+curl -N http://localhost:8789
 ```
 
 > `-N` 参数禁用缓冲，确保流式动画效果正常显示
 
-### 3. 部署到 Cloudflare
+### 4. 部署到 Cloudflare
 
 ```bash
 npm run deploy
@@ -48,117 +58,176 @@ npm run deploy
 
 ## 配置说明
 
-所有配置都在 `src/config.js` 文件中，按需修改即可。
+所有配置都在 `src/config.ts` 文件中。
 
-### 基本信息
+### 全局设置
 
-```javascript
-export const config = {
-  name: "DJJ", // 你的名字/代号
-  title: "Department of Joke Justice", // 标题
-  subtitle: "说烂笑话必遭审判", // 副标题
-  // ...
+```typescript
+export const config: Config = {
+  global: {
+    speed: {
+      typing: 20,        // 打字速度 (ms)
+      typingPause: 100,  // 标点停顿 (ms)
+      transition: 80,    // 切换动画速度 (ms)
+      effect: 50,        // 动效速度 (ms)
+    },
+    theme: {
+      primary: "brightCyan",
+      secondary: "green",
+      accent: "yellow",
+    },
+  },
+  pages: [/* ... */],
 };
 ```
 
-### 页面配置
-
-项目使用页面系统，支持三种页面类型：
-
-#### Boot 页面（启动动画）
-
-```javascript
-{
-  type: "boot",
-  content: {
-    messages: ["> SYSTEM BOOT", ".", ".", ".", " OK"],
-    progressBar: true,
-  },
-  transition: "glitch",  // 切换效果
-}
-```
+### 页面类型
 
 #### Logo 页面
 
-```javascript
+生成 ASCII 大字 Logo，带光波扫描效果。
+
+```typescript
 {
   type: "logo",
   content: {
-    customAscii: null,      // 设为 null 使用默认 Logo
-    showLightWave: true,    // 是否显示光波效果
+    text: "DJJ",                    // 转换为 ASCII 大字
+    subtitle: "Your Subtitle",
+    tagline: "Your Tagline",
   },
-  transition: "none",
+  transition: "fade",
 }
 ```
 
-#### Content 页面（正文）
+#### Markdown 页面
 
-```javascript
+支持完整的 Markdown 渲染，带终端颜色。
+
+```typescript
 {
-  type: "content",
+  type: "markdown",
   content: {
-    about: "你的自我介绍...",
-    contacts: [
-      { label: "GitHub", value: "https://github.com/yourname" },
-      { label: "Email ", value: "your@email.com" },
-    ],
-    slogan: "你的座右铭",
+    markdown: `
+## About Me
+
+> Your quote here
+
+**Bold text** and *italic text*.
+
+- List item 1
+- List item 2
+`,
   },
-  transition: "none",
+  effect: "typing",      // 打字机效果
+  transition: "fade",
 }
 ```
 
-### 转场效果
+#### Image 页面
 
-支持以下转场效果：
+支持静态图片和 GIF 动画转 ASCII。
 
-- `glitch` - 故障/乱码效果
-- `scanline` - 扫描线效果
-- `fade` - 渐隐效果
-- `none` - 无效果
+```typescript
+// 静态图片
+{
+  type: "image",
+  content: {
+    src: "assets/photo.png",   // 本地或 URL
+    width: 80,                 // ASCII 宽度
+    colored: true,             // 是否彩色
+  },
+  effect: "none",
+}
 
-### 动画速度
-
-```javascript
-speed: {
-  typing: 12,        // 打字速度 (ms)
-  typingPause: 60,   // 标点停顿 (ms)
-  transition: 40,    // 切换动画速度 (ms)
-  logoDisplay: 800,  // Logo 显示时长 (ms)
+// GIF 动画
+{
+  type: "image",
+  content: {
+    src: "assets/animation.gif",
+    width: 50,
+    colored: true,
+    animated: true,            // 启用动画
+  },
 }
 ```
 
-### 自定义 ASCII Logo
+#### Raw 页面
 
-在 `config.js` 底部修改 `customLogo`：
+原始文本，适合 slogan 等。
 
-```javascript
-export const customLogo = `
-██████╗      ██╗     ██╗
-██╔══██╗     ██║     ██║
-██║  ██║     ██║     ██║
-██║  ██║██   ██║██   ██║
-██████╔╝╚█████╔╝╚█████╔╝
-╚═════╝  ╚════╝  ╚════╝
-`;
+```typescript
+{
+  type: "raw",
+  content: {
+    text: "Your slogan here!",
+  },
+  effect: "decrypt",     // 解密效果
+}
 ```
 
-你可以使用在线工具生成 ASCII 艺术字：
+### 页面选项
 
-- [patorjk.com/software/taag](https://patorjk.com/software/taag/)
-- [ascii-art-generator.org](https://ascii-art-generator.org/)
+每个页面支持以下选项：
+
+| 选项 | 类型 | 说明 |
+|------|------|------|
+| `effect` | string | 内容动效：`none` / `typing` / `decrypt` / `glitch` / `matrix` |
+| `transition` | string | 过渡动画：`none` / `fade` / `glitch` / `scanline` |
+| `stayTime` | number | 页面停留时间 (ms) |
+| `speedMultiplier` | number | 动画速度倍率（1=正常，<1加快，>1减慢） |
+
+### 动画效果
+
+- **none** - 直接显示
+- **typing** - 打字机逐字输出
+- **decrypt** - 黑客解密风格
+- **glitch** - 故障抖动
+- **matrix** - 黑客帝国下落效果
+
+### 过渡动画
+
+- **none** - 无过渡
+- **fade** - 清屏渐隐
+- **glitch** - 故障切换
+- **scanline** - 扫描线
 
 ## 项目结构
 
 ```
-src/
-├── index.js           # Worker 入口
-├── config.js          # 用户配置文件 (修改这里!)
-├── streamHandler.js   # 流式输出主入口
-├── pageRenderer.js    # 页面渲染器
-├── effects.js         # 动画效果库
-├── asciiGenerator.js  # ASCII 艺术字生成器
-└── utils.js           # 工具函数和 ANSI 码
+├── src/
+│   ├── index.ts              # Worker 入口
+│   ├── config.ts             # 用户配置文件 (修改这里!)
+│   ├── types.ts              # TypeScript 类型定义
+│   ├── streamHandler.ts      # 流式输出主入口
+│   ├── pageRenderer.ts       # 页面渲染器
+│   ├── effects.ts            # 动画效果库
+│   ├── asciiGenerator.ts     # ASCII 艺术字生成器
+│   ├── imageToAscii.ts       # 图片转 ASCII (运行时 fallback)
+│   ├── markdownRenderer.ts   # Markdown 渲染 (运行时 fallback)
+│   ├── utils.ts              # 工具函数和 ANSI 码
+│   └── preprocessed-data.ts  # 预处理数据 (自动生成)
+├── scripts/
+│   └── preprocess.ts         # 构建时预处理脚本
+├── assets/                   # 图片资源目录
+├── wrangler.toml             # Cloudflare Workers 配置
+└── package.json
+```
+
+## 构建流程
+
+```
+npm run preprocess
+       ↓
+┌──────────────────────────────────┐
+│  scripts/preprocess.ts           │
+│  - 处理 Markdown → ANSI 终端格式  │
+│  - 处理图片 → ASCII 艺术          │
+│  - 处理 GIF → ASCII 帧序列        │
+└──────────────────────────────────┘
+       ↓
+   src/preprocessed-data.ts
+       ↓
+npm run deploy → Cloudflare Workers
 ```
 
 ## 自定义域名
@@ -179,28 +248,13 @@ routes = [{ pattern = "your.domain.com/*", zone_name = "domain.com" }]
 npm run deploy
 ```
 
-## 动画效果 API
+## 技术栈
 
-`effects.js` 提供了多种可复用的动画效果：
-
-```javascript
-import * as effects from "./effects.js";
-
-// 打字机效果
-await effects.typewriter(push, "Hello World", { speed: 20 });
-
-// 进度条
-await effects.progressBar(push, { width: 40 });
-
-// 光波扫过
-await effects.lightWaveEffect(push, logoLines);
-
-// 闪烁光标
-await effects.blinkingCursor(push, 3);
-
-// 故障转场
-await effects.glitchTransition(push);
-```
+- **Runtime**: Cloudflare Workers
+- **Language**: TypeScript
+- **Markdown**: marked + marked-terminal
+- **Image Processing**: Jimp (构建时)
+- **GIF Decoding**: decode-gif
 
 ## 许可证
 
