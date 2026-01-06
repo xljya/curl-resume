@@ -12,7 +12,7 @@ local_protocol = "http"
 ENVIRONMENT = "production"
 
 # 自定义域名路由 (部署后在 Cloudflare Dashboard 配置)
-routes = [{ pattern = "me.pdjjq.org/*", zone_name = "pdjjq.org" }]
+routes = [{ pattern = "me.liucf.com/*", zone_name = "liucf.com" }]
 
 [observability]
 enabled = false
