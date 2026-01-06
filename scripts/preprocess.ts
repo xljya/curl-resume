@@ -73,8 +73,8 @@ interface MarkdownConfig {
 marked.use(
   markedTerminal({
     showSectionPrefix: false,   // 不显示标题编号前缀
-    reflowText: true,           // 自动换行
-    width: 80,                  // 宽度限制
+    reflowText: false,          // 保持原始段落，不强制换行
+    width: 80,                  // 宽度限制 (reflowText=false 时仅用于部分元素)
     tab: 2,                     // 缩进
     emoji: false,               // 禁用 emoji 转换，保留原始 Unicode emoji
   })

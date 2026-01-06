@@ -86,15 +86,53 @@ async function renderLogoPage(
   }
 
   // 添加副标题和标语
-  let fullContent = logoText;
+  const subtitleLines: string[] = [];
   if (content.subtitle) {
-    fullContent += `\n\n> ${content.subtitle}`;
+    subtitleLines.push(`> ${content.subtitle}`);
   }
   if (content.tagline) {
-    fullContent += `\n> ${content.tagline}`;
+    subtitleLines.push(`> ${content.tagline}`);
+  }
+
+  let fullContent = logoText;
+  if (subtitleLines.length > 0) {
+    fullContent += `\n\n${subtitleLines.join("\n")}`;
   }
 
   const logoLines = fullContent.split("\n");
+
+  if (page.effect === "none") {
+    await push(`${ANSI.brightCyan}${fullContent}${ANSI.reset}\n`);
+    return;
+  }
+
+  if (page.effect === "cursorTyping") {
+    await effects.effectCursorTyping(push, logoText, {
+      speed: speed.typing || 20,
+      pauseSpeed: speed.typingPause || 100,
+      color: ANSI.brightCyan,
+    });
+    if (subtitleLines.length > 0) {
+      await push("\n");
+      await effects.effectTyping(push, subtitleLines.join("\n"), {
+        speed: speed.typing || 20,
+        pauseSpeed: speed.typingPause || 100,
+        color: ANSI.brightCyan,
+      });
+    }
+    await push("\n");
+    return;
+  }
+
+  if (page.effect === "typing") {
+    await effects.effectTyping(push, fullContent, {
+      speed: speed.typing || 20,
+      pauseSpeed: speed.typingPause || 100,
+      color: ANSI.brightCyan,
+    });
+    await push("\n");
+    return;
+  }
 
   // 使用扫描显示效果渲染 Logo
   await effects.scanDisplay(push, logoLines, {

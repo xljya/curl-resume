@@ -5,7 +5,13 @@
 
 export type PageType = "logo" | "markdown" | "image" | "raw";
 
-export type EffectType = "none" | "typing" | "decrypt" | "glitch" | "matrix";
+export type EffectType =
+  | "none"
+  | "typing"
+  | "cursorTyping"
+  | "decrypt"
+  | "glitch"
+  | "matrix";
 
 export type TransitionType = "none" | "fade" | "glitch" | "scanline";
 

@@ -124,6 +124,51 @@ export async function effectTyping(
 }
 
 /**
+ * 光标定位逐字显示 - 按列从左到右，不滚屏
+ * 注意：使用 Array.from() 正确处理多字节 Unicode 字符（如 emoji）
+ */
+export async function effectCursorTyping(
+  push: PushFunction,
+  text: string,
+  options: EffectOptions = {}
+): Promise<void> {
+  const { speed = 20, pauseSpeed = 100, color = "" } = options;
+  const lines = text.split("\n");
+  const lineChars = lines.map((line) => Array.from(line));
+  const maxWidth = Math.max(0, ...lineChars.map((chars) => chars.length));
+
+  await push(ANSI.hideCursor);
+  await push(ANSI.clear);
+
+  try {
+    for (let col = 0; col < maxWidth; col++) {
+      for (let row = 0; row < lineChars.length; row++) {
+        const chars = lineChars[row];
+        const char = chars[col];
+        if (!char) {
+          continue;
+        }
+        if (char === " ") {
+          continue;
+        }
+
+        await push(ANSI.cursorTo(col + 1, row + 1));
+        await push(color ? `${color}${char}${ANSI.reset}` : char);
+
+        if (",.:;，。：；!?！？".includes(char)) {
+          await sleep(pauseSpeed);
+        } else {
+          await sleep(speed);
+        }
+      }
+    }
+  } finally {
+    await push(ANSI.cursorTo(1, lineChars.length + 1));
+    await push(ANSI.showCursor);
+  }
+}
+
+/**
  * 解密效果 - 黑客风格从乱码解析
  * 注意：使用 Array.from() 正确处理多字节 Unicode 字符（如 emoji）
  */
@@ -274,6 +319,7 @@ export function getEffect(
   > = {
     none: effectNone,
     typing: effectTyping,
+    cursorTyping: effectCursorTyping,
     decrypt: effectDecrypt,
     glitch: effectGlitch,
     matrix: effectMatrix,
@@ -424,6 +470,7 @@ export default {
   getEffect,
   effectNone,
   effectTyping,
+  effectCursorTyping,
   effectDecrypt,
   effectGlitch,
   effectMatrix,
