@@ -30,6 +30,7 @@ export default {
       const subtitle = logoContent?.subtitle || "";
       const tagline = logoContent?.tagline || "";
 
+      const curlTarget = url.origin;
       const htmlResponse = `
 <!DOCTYPE html>
 <html>
@@ -68,7 +69,7 @@ export default {
     <p class="subtitle">${subtitle}</p>
     <p class="tagline">${tagline}</p>
     <p>请使用 curl 访问:</p>
-    <code>curl -N ${url.host}</code>
+    <code>curl -N ${curlTarget}</code>
     <p class="hint">-N 参数开启流式动画效果</p>
   </div>
 </body>
